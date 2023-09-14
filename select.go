@@ -16,6 +16,7 @@ type selectData struct {
 	Options           []string
 	Columns           []Sqlizer
 	From              Sqlizer
+	AsOf              Sqlizer
 	Joins             []Sqlizer
 	WhereParts        []Sqlizer
 	GroupBys          []string
@@ -98,6 +99,16 @@ func (d *selectData) toSqlRaw() (sqlStr string, args []interface{}, err error) {
 		if err != nil {
 			return
 		}
+	}
+
+	if d.AsOf != nil {
+		sql.WriteString(" AS OF ")
+		args, err = appendToSql([]Sqlizer{d.AsOf}, sql, " ", args)
+		if err != nil {
+			return
+		}
+
+		// sql.WriteString(" ")
 	}
 
 	if len(d.Joins) > 0 {
@@ -272,7 +283,8 @@ func (b SelectBuilder) RemoveColumns() SelectBuilder {
 // Column adds a result column to the query.
 // Unlike Columns, Column accepts args which will be bound to placeholders in
 // the columns string, for example:
-//   Column("IF(col IN ("+squirrel.Placeholders(3)+"), 1, 0) as col", 1, 2, 3)
+//
+//	Column("IF(col IN ("+squirrel.Placeholders(3)+"), 1, 0) as col", 1, 2, 3)
 func (b SelectBuilder) Column(column interface{}, args ...interface{}) SelectBuilder {
 	return builder.Append(b, "Columns", newPart(column, args...)).(SelectBuilder)
 }
@@ -287,6 +299,18 @@ func (b SelectBuilder) FromSelect(from SelectBuilder, alias string) SelectBuilde
 	// Prevent misnumbered parameters in nested selects (#183).
 	from = from.PlaceholderFormat(Question)
 	return builder.Set(b, "From", Alias(from, alias)).(SelectBuilder)
+}
+
+// AS OF
+
+// AsOf adds an as of expression after from and before where query. It is used for dolt db
+func (b SelectBuilder) AsOf(sql string, args ...interface{}) SelectBuilder {
+	return b.AsOfExpr(Expr(sql, args...))
+}
+
+// AsOfExpr adds an as of expression after from and before where query. It is used for dolt db
+func (b SelectBuilder) AsOfExpr(expr Sqlizer) SelectBuilder {
+	return builder.Append(b, "AsOf", expr).(SelectBuilder)
 }
 
 // JoinClause adds a join clause to the query.
