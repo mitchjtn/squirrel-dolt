@@ -310,7 +310,7 @@ func (b SelectBuilder) AsOf(sql string, args ...interface{}) SelectBuilder {
 
 // AsOfExpr adds an as of expression after from and before where query. It is used for dolt db
 func (b SelectBuilder) AsOfExpr(expr Sqlizer) SelectBuilder {
-	return builder.Append(b, "AsOf", expr).(SelectBuilder)
+	return builder.Set(b, "AsOf", expr).(SelectBuilder)
 }
 
 // JoinClause adds a join clause to the query.
