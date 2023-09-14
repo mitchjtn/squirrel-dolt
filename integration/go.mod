@@ -1,4 +1,4 @@
-module github.com/Masterminds/squirrel/integration
+module github.com/mitchjtn/squirrel-dolt/integration
 
 go 1.12
 
@@ -11,4 +11,4 @@ require (
 	google.golang.org/appengine v1.6.5 // indirect
 )
 
-replace github.com/Masterminds/squirrel => ../
+replace module github.com/mitchjtn/squirrel-dolt => ../
