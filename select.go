@@ -101,6 +101,14 @@ func (d *selectData) toSqlRaw() (sqlStr string, args []interface{}, err error) {
 		}
 	}
 
+	if len(d.Joins) > 0 {
+		sql.WriteString(" ")
+		args, err = appendToSql(d.Joins, sql, " ", args)
+		if err != nil {
+			return
+		}
+	}
+
 	if d.AsOf != nil {
 		sql.WriteString(" AS OF ")
 		args, err = appendToSql([]Sqlizer{d.AsOf}, sql, " ", args)
@@ -109,14 +117,6 @@ func (d *selectData) toSqlRaw() (sqlStr string, args []interface{}, err error) {
 		}
 
 		// sql.WriteString(" ")
-	}
-
-	if len(d.Joins) > 0 {
-		sql.WriteString(" ")
-		args, err = appendToSql(d.Joins, sql, " ", args)
-		if err != nil {
-			return
-		}
 	}
 
 	if len(d.WhereParts) > 0 {
@@ -302,10 +302,10 @@ func (b SelectBuilder) FromSelect(from SelectBuilder, alias string) SelectBuilde
 }
 
 // AS OF
-
+// TODO: refactor using parameterized query
 // AsOf adds an as of expression after from and before where query. It is used for dolt db
-func (b SelectBuilder) AsOf(sql string, args ...interface{}) SelectBuilder {
-	return b.AsOfExpr(Expr(sql, args...))
+func (b SelectBuilder) AsOf(sql string) SelectBuilder {
+	return b.AsOfExpr(Expr(sql))
 }
 
 // AsOfExpr adds an as of expression after from and before where query. It is used for dolt db
